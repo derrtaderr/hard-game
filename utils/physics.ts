@@ -1,3 +1,4 @@
+
 import { Rect, Point, EnemyState, EnemyType } from '../types';
 import { PLAYER_SIZE, ENEMY_RADIUS, COIN_RADIUS } from '../constants';
 
@@ -30,9 +31,6 @@ export const checkCircleRectCollision = (circle: { x: number; y: number; r: numb
 export const updateEnemyPosition = (enemy: EnemyState): void => {
   if (enemy.type === EnemyType.LINEAR_VERTICAL) {
     enemy.currentY += enemy.speed * enemy.dir;
-    // Check bounds relative to start position and range
-    // Assuming range implies "move range/2 up and range/2 down" or similar?
-    // Let's implement simpler: move until 'range' pixels from start, then flip
     const dist = enemy.currentY - enemy.y;
     if (Math.abs(dist) >= (enemy.range || 100)) {
       enemy.dir *= -1;
@@ -43,5 +41,15 @@ export const updateEnemyPosition = (enemy: EnemyState): void => {
     if (Math.abs(dist) >= (enemy.range || 100)) {
       enemy.dir *= -1;
     }
+  } else if (enemy.type === EnemyType.CIRCULAR) {
+    if (enemy.currentAngle === undefined) enemy.currentAngle = enemy.initialAngle || 0;
+    
+    // Update Angle
+    enemy.currentAngle += enemy.speed * enemy.dir;
+    
+    // Calculate new X/Y based on pivot (x,y) and radius
+    const r = enemy.rotationRadius || 0;
+    enemy.currentX = enemy.x + Math.cos(enemy.currentAngle) * r;
+    enemy.currentY = enemy.y + Math.sin(enemy.currentAngle) * r;
   }
 };

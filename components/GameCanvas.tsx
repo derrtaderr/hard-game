@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useCallback } from 'react';
 import { 
   CANVAS_WIDTH, CANVAS_HEIGHT, PLAYER_SIZE, PLAYER_SPEED, 
@@ -8,7 +9,7 @@ import {
   COLOR_COIN, COLOR_COIN_BORDER, COIN_RADIUS
 } from '../constants';
 import { LEVELS } from '../data/levels';
-import { Rect, Point, EnemyState } from '../types';
+import { Rect, Point, EnemyState, EnemyType } from '../types';
 import { checkRectCollision, checkCircleRectCollision, updateEnemyPosition } from '../utils/physics';
 
 interface GameCanvasProps {
@@ -35,13 +36,26 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ currentLevelIndex, deaths, onDe
     levelRef.current = level;
     playerPos.current = { ...level.spawnPoint };
     
-    // Deep copy enemies to reset their state
-    enemiesRef.current = level.enemies.map(e => ({
-      ...e,
-      currentX: e.x,
-      currentY: e.y, 
-      dir: e.direction || 1
-    }));
+    // Deep copy enemies and initialize state
+    enemiesRef.current = level.enemies.map(e => {
+      let startX = e.x;
+      let startY = e.y;
+      
+      // If circular, calculate initial position based on angle
+      if (e.type === EnemyType.CIRCULAR) {
+        startX = e.x + Math.cos(e.initialAngle || 0) * (e.rotationRadius || 0);
+        startY = e.y + Math.sin(e.initialAngle || 0) * (e.rotationRadius || 0);
+      }
+
+      return {
+        ...e,
+        currentX: startX,
+        currentY: startY, 
+        dir: e.direction || 1,
+        currentAngle: e.initialAngle || 0
+      };
+    });
+    
     coinsRef.current = [...level.coins];
     
     // Clear keys on reset to prevent stuck movement
