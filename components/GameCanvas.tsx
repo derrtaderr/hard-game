@@ -11,6 +11,7 @@ import {
 import { LEVELS } from '../data/levels';
 import { Rect, Point, EnemyState, EnemyType } from '../types';
 import { checkRectCollision, checkCircleRectCollision, updateEnemyPosition } from '../utils/physics';
+import { AudioController } from '../utils/audio';
 
 interface GameCanvasProps {
   currentLevelIndex: number;
@@ -158,6 +159,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ currentLevelIndex, deaths, onDe
     for (const enemy of enemiesRef.current) {
       const enemyCircle = { x: enemy.currentX, y: enemy.currentY, r: ENEMY_RADIUS };
       if (checkCircleRectCollision(enemyCircle, playerRect)) {
+        AudioController.playDeath();
         onDeath();
         resetLevel();
         return; // Stop update for this frame
@@ -170,6 +172,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ currentLevelIndex, deaths, onDe
       const coinCircle = { x: coin.x, y: coin.y, r: COIN_RADIUS };
       if (checkCircleRectCollision(coinCircle, playerRect)) {
         // Collect coin
+        AudioController.playCoin();
         coinsRef.current.splice(i, 1);
       }
     }
@@ -185,6 +188,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ currentLevelIndex, deaths, onDe
          
          if (px > level.endZone.x && px < level.endZone.x + level.endZone.w &&
              py > level.endZone.y && py < level.endZone.y + level.endZone.h) {
+            AudioController.playWin();
             onLevelComplete();
             resetLevel(); 
             return;
